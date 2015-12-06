@@ -1,0 +1,14 @@
+{
+  "name": "socket-chat",
+  "version": "0.0.1",
+  "description": "An example module to illustrate the usage of a package.json",
+  "author": "Daniel Dafoe <hello@danieldafoe.com>",
+  "dependencies": {
+    "express": "^4.10.2",
+    "socket.io": "^1.3.7"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/npm/npm.git"
+  }
+}
