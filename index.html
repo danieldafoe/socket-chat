@@ -4,6 +4,7 @@
 	<title>Socket Chat</title>
 	<script src="/socket.io/socket.io.js"></script>
 	<script src="http://code.jquery.com/jquery-1.11.1.js"></script>
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
 	<script>
 		var socket = io();
 		
@@ -31,14 +32,51 @@
 				$('#msg').focus();
 			});
 			
+			// Handle user typing
+			$('#msg').on('input', function() {
+				console.log($(this).val());
+				if (!$(this).val()) {
+					socket.emit('user typed', false);
+				}
+				else {
+					socket.emit('user typed', true);
+				}
+			});
+			socket.on('user typing', function(user) {
+				// Find user in onlineList[] and give proper class
+				// to show icon for typing
+				$('#online p').each(function(i, el) {
+					if ($(el).text().trim() == user) {
+						$(el).addClass('typing');
+					}
+				});
+			});
+			socket.on('user not typing', function(user) {
+				// Find user in onlineList[] and give proper class
+				// to show icon for typing
+				$('#online p').each(function(i, el) {
+					if ($(el).text().trim() == user) {
+						$(el).removeClass('typing');
+					}
+				});
+			});
+			
 			// Receive chat message to chat
 			socket.on('chat msg', function(msg) {
 				$('#log').append('<div><p class="user-name">' + msg.nickname + ':</p> <p class="user-msg">' + msg.msg + '</p></div>');
+				
+				// Show that user is no longer typing
+				socket.emit('user typed', false);
 			});
 			
 			// Receive new user
 			socket.on('user online', function(user) {
-				$('#online').append('<p>' + user + '</p>');
+				var onlineUsers = "";
+				//$('#online').append('<p>' + user + '</p>');
+				$.each(user, function(i, val) {
+					onlineUsers = onlineUsers + '<p><i class="fa fa-keyboard-o"></i> ' + val + '</p>';
+				});
+				$('#online').append(onlineUsers);
 			});
 			
 			// Receive user exiting
@@ -52,11 +90,20 @@
 			});
 			
 			socket.on('update user', function(data) {
+				/*
 				$('#online p').each(function(i) {
 					if ($(this).text() == data.id) {
 						$(this).remove();
 						$('#online').append('<p>' + data.name + '</p>');
 					}
+				});
+				*/
+				
+				var online = $('#online');
+				online.empty();
+				console.log(data);
+				$(data).each(function(i) {
+					online.append('<p><i class="fa fa-keyboard-o"></i> ' + data[i] + '</p>');
 				});
 			});
 		});
@@ -153,7 +200,8 @@
 		}
 		
 		#log {
-			height:88%;
+			overflow:scroll;
+			height:83%;
 			float:left;
 			width:80%;
 			background-color:#f8f8f8;
@@ -250,14 +298,22 @@
 			font-weight:400;
 		}
 		#online {
+			overflow:scroll;
 			padding: 0 1rem 1rem 1rem;
 			color:#444;	
 			width:100%;
 			height:88%;
 		}
-		
 		#online p {
 			margin:0;
+		}
+		#online i {
+			-webkit-transition:all 150ms ease-out;
+			transition:all 150ms ease-out;
+			opacity:0;
+		}
+		.typing i {
+			opacity:1 !important;
 		}
 	</style>
 </head>
